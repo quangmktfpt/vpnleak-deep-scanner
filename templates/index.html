@@ -16,6 +16,7 @@
   <ul>
     <li><strong>IP Public:</strong> <span class="ok">{{ ip }}</span></li>
     <li><strong>Vị trí:</strong> {{ ip_info.city }}, {{ ip_info.country }} (Org: {{ ip_info.org }})</li>
+    <li><strong>ISP:</strong> {{ ip_info.isp }}</li>
     <li><strong>Loại IP:</strong> {{ ip_info.hostType }}</li>
     <li><strong>Điểm blacklist (Abuse):</strong>
       {% if ip_info.abuseScore > 50 %}
