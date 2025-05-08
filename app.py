@@ -1,60 +1,30 @@
-import os
 import requests
-import geoip2.database
 from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
-# Chuẩn hóa đường dẫn
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CITY_DB = os.path.join(BASE_DIR, "static", "data", "GeoLite2-City.mmdb")
-ASN_DB = os.path.join(BASE_DIR, "static", "data", "GeoLite2-ASN.mmdb")
-
-print("🔍 Check GeoLite2-City.mmdb:", os.path.exists(CITY_DB))
-print("🔍 Check GeoLite2-ASN.mmdb:", os.path.exists(ASN_DB))
-
-if not os.path.exists(CITY_DB):
-    print("❌ File CITY_DB không tồn tại, kiểm tra lại đường dẫn hoặc upload lên GitHub.")
-if not os.path.exists(ASN_DB):
-    print("❌ File ASN_DB không tồn tại, kiểm tra lại đường dẫn hoặc upload lên GitHub.")
-
-city_reader = geoip2.database.Reader(CITY_DB)
-asn_reader = geoip2.database.Reader(ASN_DB)
-
-ABUSEIPDB_API_KEY = "demo"  # Thay bằng key thật nếu có
+IPREGISTRY_API_KEY = "tryout"  # Bạn nên tạo key riêng miễn phí ở ipregistry.co
 
 def get_ip_info(ip):
-    ipinfo = {}
+    ipinfo = {
+        "city": None,
+        "country": None,
+        "timezone": None,
+        "isp": None,
+        "hostType": None,
+        "abuseScore": None
+    }
 
-    # Lấy city/country
     try:
-        city = city_reader.city(ip)
-        ipinfo["city"] = city.city.name
-        ipinfo["country"] = city.country.name
-        ipinfo["timezone"] = city.location.time_zone
-    except:
-        ipinfo["city"] = None
-        ipinfo["country"] = None
-        ipinfo["timezone"] = None
-
-    # Lấy ISP từ ASN
-    try:
-        asn = asn_reader.asn(ip)
-        ipinfo["isp"] = asn.autonomous_system_organization
-    except:
-        ipinfo["isp"] = "Unknown"
-
-    # Lấy loại IP từ AbuseIPDB
-    try:
-        abuse_data = requests.get(
-            f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}&maxAgeInDays=90",
-            headers={"Key": ABUSEIPDB_API_KEY, "Accept": "application/json"}
-        ).json()
-        ipinfo["abuseScore"] = abuse_data.get("data", {}).get("abuseConfidenceScore", -1)
-        ipinfo["hostType"] = abuse_data.get("data", {}).get("usageType", "Unknown")
-    except:
-        ipinfo["abuseScore"] = -1
-        ipinfo["hostType"] = "Unknown"
+        resp = requests.get(f"https://api.ipregistry.co/{ip}?key={IPREGISTRY_API_KEY}").json()
+        ipinfo["city"] = resp.get("location", {}).get("city")
+        ipinfo["country"] = resp.get("location", {}).get("country", {}).get("name")
+        ipinfo["timezone"] = resp.get("time_zone", {}).get("id")
+        ipinfo["isp"] = resp.get("connection", {}).get("organization")
+        ipinfo["hostType"] = "Hosting" if resp.get("security", {}).get("is_hosting") else "Residential"
+        ipinfo["abuseScore"] = "Blacklisted" if resp.get("security", {}).get("is_abuser") else "Clean"
+    except Exception as e:
+        print("Lỗi API:", e)
 
     return ipinfo
 
