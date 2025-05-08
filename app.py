@@ -10,6 +10,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CITY_DB = os.path.join(BASE_DIR, "static", "data", "GeoLite2-City.mmdb")
 ASN_DB = os.path.join(BASE_DIR, "static", "data", "GeoLite2-ASN.mmdb")
 
+print("🔍 Check GeoLite2-City.mmdb:", os.path.exists(CITY_DB))
+print("🔍 Check GeoLite2-ASN.mmdb:", os.path.exists(ASN_DB))
+
+if not os.path.exists(CITY_DB):
+    print("❌ File CITY_DB không tồn tại, kiểm tra lại đường dẫn hoặc upload lên GitHub.")
+if not os.path.exists(ASN_DB):
+    print("❌ File ASN_DB không tồn tại, kiểm tra lại đường dẫn hoặc upload lên GitHub.")
+
 city_reader = geoip2.database.Reader(CITY_DB)
 asn_reader = geoip2.database.Reader(ASN_DB)
 
