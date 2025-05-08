@@ -3,7 +3,7 @@ from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
-IPREGISTRY_API_KEY = "tryout"  # Bạn nên tạo key riêng miễn phí ở ipregistry.co
+IPREGISTRY_API_KEY = "tryout"  # Nên thay bằng API key riêng
 
 def get_ip_info(ip):
     ipinfo = {
@@ -12,7 +12,8 @@ def get_ip_info(ip):
         "timezone": None,
         "isp": None,
         "hostType": None,
-        "abuseScore": None
+        "abuseScore": 0,
+        "abuseLabel": "Clean"
     }
 
     try:
@@ -21,8 +22,10 @@ def get_ip_info(ip):
         ipinfo["country"] = resp.get("location", {}).get("country", {}).get("name")
         ipinfo["timezone"] = resp.get("time_zone", {}).get("id")
         ipinfo["isp"] = resp.get("connection", {}).get("organization")
+        is_abuser = resp.get("security", {}).get("is_abuser", False)
+        ipinfo["abuseScore"] = 100 if is_abuser else 0
+        ipinfo["abuseLabel"] = "Blacklisted" if is_abuser else "Clean"
         ipinfo["hostType"] = "Hosting" if resp.get("security", {}).get("is_hosting") else "Residential"
-        ipinfo["abuseScore"] = "Blacklisted" if resp.get("security", {}).get("is_abuser") else "Clean"
     except Exception as e:
         print("Lỗi API:", e)
 
