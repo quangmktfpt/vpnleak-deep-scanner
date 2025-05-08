@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VPN Leak Deep Scanner</title>
+  <style>
+    body { font-family: Arial; max-width: 700px; margin: auto; padding-top: 40px; }
+    h2 { color: #4CAF50; }
+    .ok { color: green; }
+    .warn { color: orange; }
+    .fail { color: red; }
+    ul { line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <h2>🔍 Kết quả kiểm tra VPN:</h2>
+  <ul>
+    <li><strong>IP Public:</strong> <span class="ok">{{ ip }}</span></li>
+    <li><strong>Vị trí:</strong> {{ ip_info.city }}, {{ ip_info.country }} (Org: {{ ip_info.org }})</li>
+    <li><strong>Loại IP:</strong> {{ ip_info.hostType }}</li>
+    <li><strong>Điểm blacklist (Abuse):</strong>
+      {% if ip_info.abuseScore > 50 %}
+        <span class="fail">{{ ip_info.abuseScore }} ⚠️ Có thể bị chặn</span>
+      {% elif ip_info.abuseScore > 0 %}
+        <span class="warn">{{ ip_info.abuseScore }} 🟠 Đang bị theo dõi</span>
+      {% else %}
+        <span class="ok">0 ✅ Sạch</span>
+      {% endif %}
+    </li>
+    <li><strong>User-Agent:</strong> <span id="ua"></span></li>
+    <li><strong>Múi giờ:</strong> <span id="timezone"></span></li>
+    <li><strong>DNS Leak:</strong> <span id="dns-leak" class="warn">Đang kiểm tra...</span></li>
+    <li><strong>WebRTC Leak:</strong> <span id="webrtc-leak" class="warn">Đang kiểm tra...</span></li>
+    <li><strong>Canvas Fingerprint:</strong> <span id="canvas-fp" class="warn">Đang kiểm tra...</span></li>
+  </ul>
+  <button onclick="location.reload()">🔁 Kiểm tra lại</button>
+  <script src="/static/script.js"></script>
+</body>
+</html>
