@@ -7,8 +7,8 @@ app = Flask(__name__)
 
 # Chuẩn hóa đường dẫn
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CITY_DB = os.path.join(BASE_DIR, "GeoLite2-City.mmdb")
-ASN_DB = os.path.join(BASE_DIR, "GeoLite2-ASN.mmdb")
+CITY_DB = os.path.join(BASE_DIR, "static", "data", "GeoLite2-City.mmdb")
+ASN_DB = os.path.join(BASE_DIR, "static", "data", "GeoLite2-ASN.mmdb")
 
 city_reader = geoip2.database.Reader(CITY_DB)
 asn_reader = geoip2.database.Reader(ASN_DB)
