@@ -15,7 +15,7 @@
   <h2>🔍 Kết quả kiểm tra VPN:</h2>
   <ul>
     <li><strong>IP Public:</strong> <span class="ok">{{ ip }}</span></li>
-    <li><strong>Vị trí:</strong> {{ ip_info.city }}, {{ ip_info.country }} (Org: {{ ip_info.org }})</li>
+    <li><strong>Vị trí:</strong> {{ ip_info.city }}, {{ ip_info.country }}</li>
     <li><strong>ISP:</strong> {{ ip_info.isp }}</li>
     <li><strong>Loại IP:</strong> {{ ip_info.hostType }}</li>
     <li><strong>Điểm blacklist (Abuse):</strong>
@@ -28,12 +28,45 @@
       {% endif %}
     </li>
     <li><strong>User-Agent:</strong> <span id="ua"></span></li>
-    <li><strong>Múi giờ:</strong> <span id="timezone"></span></li>
+    <li><strong>Múi giờ:</strong> {{ ip_info.timezone }}</li>
     <li><strong>DNS Leak:</strong> <span id="dns-leak" class="warn">Đang kiểm tra...</span></li>
     <li><strong>WebRTC Leak:</strong> <span id="webrtc-leak" class="warn">Đang kiểm tra...</span></li>
     <li><strong>Canvas Fingerprint:</strong> <span id="canvas-fp" class="warn">Đang kiểm tra...</span></li>
   </ul>
   <button onclick="location.reload()">🔁 Kiểm tra lại</button>
-  <script src="/static/script.js"></script>
+  <script>
+    document.getElementById("ua").textContent = navigator.userAgent;
+    document.getElementById("timezone").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // DNS Leak: gợi ý dùng DNS resolver như cloudflare-dns.com
+    fetch("https://cloudflare-dns.com/dns-query", { method: "GET", mode: "no-cors" })
+      .then(() => document.getElementById("dns-leak").textContent = "Không phát hiện")
+      .catch(() => document.getElementById("dns-leak").textContent = "⚠ Có thể bị leak");
+
+    // WebRTC Leak check
+    const rtc = new RTCPeerConnection({iceServers:[]});
+    rtc.createDataChannel("");
+    rtc.createOffer().then(offer => rtc.setLocalDescription(offer));
+    rtc.onicecandidate = evt => {
+      if (evt.candidate && evt.candidate.candidate.indexOf("srflx") !== -1) {
+        document.getElementById("webrtc-leak").textContent = "⚠ Có thể bị leak";
+      } else {
+        document.getElementById("webrtc-leak").textContent = "Không phát hiện";
+      }
+    };
+
+    // Canvas fingerprint check
+    try {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      ctx.textBaseline = "top";
+      ctx.font = "14px Arial";
+      ctx.fillText("vpn check", 2, 2);
+      const fp = canvas.toDataURL();
+      document.getElementById("canvas-fp").textContent = "Đã tạo fingerprint";
+    } catch {
+      document.getElementById("canvas-fp").textContent = "Không tạo được";
+    }
+  </script>
 </body>
 </html>
